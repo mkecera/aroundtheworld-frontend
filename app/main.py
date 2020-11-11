@@ -48,11 +48,11 @@ def similarity():
     cur = db_similarity.cursor()
 
     try:
-        cur.execute("SELECT * FROM station_" + station + "_" + month)
+        cur.execute("SELECT * FROM station_" + station + "_" + month + " LIMIT 100")
         similar_stations_list = list(cur.fetchall())
 
         # convert list of tuples into list of lists
-        similar_stations_list = [list(row) for row in similar_stations_list[:101]]
+        similar_stations_list = [list(row) for row in similar_stations_list]
 
         stations = []
 
