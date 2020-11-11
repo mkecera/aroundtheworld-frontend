@@ -29,33 +29,74 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
 </head>
 
 <body>
 
   <div class="container">
-    <div class="row">
+    <div class="row mt-3">
       <div class="col">
         <h1 class="text-center">Around The World</h1>
       </div>
     </div>
-    <div class="row">
+    <div class="row mb-1">
       <div class="col">
-        <h2 class="text-center">Pick a place you like on the map below</h2>
+        <h2 class="text-center">Pick a location you like on the map below</h2>
       </div>
     </div>
-    <div class="row">
+    <div class="row mb-4">
       <div class="col">
         <div id="mapid"></div>
       </div>
     </div>
-    <div class="row mt-5">
+    <div class="row justify-content-center mb-3">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-outline-dark active">
+            <input type="radio" name="options" id="option1" value=1 onclick="onClick(true)" autocomplete="off" checked>Jan
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option2" value=2 onclick="onClick(true)" autocomplete="off">Feb
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option3" value=3 onclick="onClick(true)" autocomplete="off">Mar
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option4" value=4 onclick="onClick(true)" autocomplete="off">Apr
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option5" value=5 onclick="onClick(true)" autocomplete="off">May
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option6" value=6 onclick="onClick(true)" autocomplete="off">Jun
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option7" value=7 onclick="onClick(true)" autocomplete="off">Jul
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option8" value=8 onclick="onClick(true)" autocomplete="off">Aug
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option9" value=9 onclick="onClick(true)" autocomplete="off">Sep
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option10" value=10 onclick="onClick(true)" autocomplete="off">Oct
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option11" value=11 onclick="onClick(true)" autocomplete="off">Nov
+          </label>
+          <label class="btn btn-outline-dark">
+            <input type="radio" name="options" id="option12" value=12 onclick="onClick(true)" autocomplete="off">Dec
+          </label>
+        </div>
+    </div>
+    <div class="row mb-1">
       <div class="col">
-        <h2 class="text-center">The following places have climate closest to the one you picked!</h2>
+        <h2 class="text-center" id="test">These are the top 100 locations with the most similar climate to the one you picked for the month of Jan!</h2>
       </div>
     </div>
-    <div class="row mb-5">
+    <div class="row">
       <div class="col">
         <div id="mapid2"></div>
       </div>
@@ -65,11 +106,11 @@
 
   <script>
       // load data from Flask
-      var locations = JSON.parse('{{data|tojson}}');
+      var allStations = JSON.parse('{{data|tojson}}');
 
       // THIS IS THE FIRST MAP
       // create map
-      var mymap = L.map('mapid');
+      var myMap = L.map('mapid');
 
       // attribution link
       mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
@@ -79,61 +120,109 @@
           'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               attribution: '&copy; ' + mapLink + ' Contributors',
               maxZoom: 18,
-          }).addTo(mymap);
+          }).addTo(myMap);
 
       // add marker cluster group
       var markers = L.markerClusterGroup({disableClusteringAtZoom: 8});
 
+      // last selected marker
+      var lastSelectedMarker = {};
+
       // add markers
-      /*var locations = [
-          ["LOCATION_1", 11.8166, 122.0942],
-          ["LOCATION_2", 11.9804, 121.9189],
-          ["LOCATION_3", 10.7202, 122.5621],
-          ["LOCATION_4", 11.3889, 122.6277],
-          ["LOCATION_5", 10.5929, 122.6325]
-      ];*/
-      for (var i = 0; i < locations.length; i++) {
-          marker = new L.marker([locations[i][2], locations[i][3]])
-              .bindTooltip("<b>" + locations[i][1] + "</b><br>Latitude: " + locations[i][2] + "<br>Longitude: "
-                  + locations[i][3] + "<br>Elevation: " + locations[i][4]);
+      for (var i = 0; i < allStations.length; i++) {
+          marker = new L.marker([allStations[i][2], allStations[i][3]])
+              .bindTooltip("<b>" + allStations[i][1] + "</b><br>Latitude: " + allStations[i][2] + "<br>Longitude: "
+                  + allStations[i][3] + "<br>Elevation: " + allStations[i][4])
+              .on("click", onClick);
+          marker.station = allStations[i][0];
           markers.addLayer(marker);
       }
-      mymap.addLayer(markers);
-      mymap.fitBounds(markers.getBounds());
+      myMap.addLayer(markers);
+      myMap.fitBounds(markers.getBounds());
 
       // THIS IS THE SECOND MAP
       // create map
-      var mymap2 = L.map('mapid2');
-
-      // attribution link
-      mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+      var myMap2 = L.map('mapid2');
 
       // add OpenStreetMap Tile layer
       L.tileLayer(
           'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               attribution: '&copy; ' + mapLink + ' Contributors',
               maxZoom: 18,
-          }).addTo(mymap2);
+          }).addTo(myMap2);
 
-      // add marker cluster group
-      var markers2 = L.markerClusterGroup({disableClusteringAtZoom: 8});
+      myMap2.setView(new L.LatLng(0, 0), 1);
 
-      // add markers
-      /*var locations = [
-          ["LOCATION_1", 11.8166, 122.0942],
-          ["LOCATION_2", 11.9804, 121.9189],
-          ["LOCATION_3", 10.7202, 122.5621],
-          ["LOCATION_4", 11.3889, 122.6277],
-          ["LOCATION_5", 10.5929, 122.6325]
-      ];*/
-      for (var i = 0; i < locations.length; i++) {
-          marker = new L.marker([locations[i][2], locations[i][3]])
-              .bindTooltip("<b>" + locations[i][1] + "</b><br>Latitude: " + locations[i][2] + "<br>Longitude: "
-                  + locations[i][3] + "<br>Elevation: " + locations[i][4]);
-          markers2.addLayer(marker);
+      // marker onClick function
+      function onClick(fromMonthSelection) {
+          var monthNum = $("input:radio[name=options]:checked").val();
+          var monthText;
+          if (monthNum == 1) {
+              monthText = "January";
+          } else if (monthNum == 2) {
+              monthText = "February";
+          } else if (monthNum == 3) {
+              monthText = "March";
+          } else if (monthNum == 4) {
+              monthText = "April";
+          } else if (monthNum == 5) {
+              monthText = "May";
+          } else if (monthNum == 6) {
+              monthText = "June";
+          } else if (monthNum == 7) {
+              monthText = "July";
+          } else if (monthNum == 8) {
+              monthText = "August";
+          } else if (monthNum == 9) {
+              monthText = "September";
+          } else if (monthNum == 10) {
+              monthText = "October";
+          } else if (monthNum == 11) {
+              monthText = "November";
+          } else if (monthNum == 12) {
+              monthText = "December";
+          }
+
+          if (fromMonthSelection == true) {
+              $("#test").text("These are the top 100 locations with the most similar climate to the one you picked for the month of " + monthText + "!");
+          } else {
+              lastSelectedMarker = this;
+          }
+
+          $.getJSON("/similarity?station=" + lastSelectedMarker.station + "&month=" + monthNum + "&limit=" + 100, function(data) {
+              var similarStations = data["stations"];
+
+              // remove all layers
+              myMap2.eachLayer(function(layer) {
+                  myMap2.removeLayer(layer);
+              });
+
+              // add OpenStreetMap Tile layer
+              L.tileLayer(
+                  'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                      attribution: '&copy; ' + mapLink + ' Contributors',
+                      maxZoom: 18,
+                  }).addTo(myMap2);
+
+              // add marker cluster group
+              var markers2 = L.markerClusterGroup({disableClusteringAtZoom: 8});
+
+              // add markers
+              for (var i = 0; i < similarStations.length; i++) {
+                  marker2 = new L.marker([similarStations[i][2], similarStations[i][3]])
+                      .bindTooltip("<b>" + similarStations[i][1] + "</b><br>Latitude: " + similarStations[i][2]
+                          + "<br>Longitude: " + similarStations[i][3] + "<br>Elevation: " + similarStations[i][4]
+                          + "<br>Similarity: " + similarStations[i][5]);
+                  markers2.addLayer(marker2);
+              }
+              myMap2.addLayer(markers2);
+              try {
+                  myMap2.fitBounds(markers2.getBounds());
+              } catch(err) {
+                  myMap2.setView(new L.LatLng(0, 0), 1);
+              }
+          });
       }
-      mymap2.addLayer(markers2);
-      mymap2.fitBounds(markers.getBounds());
   </script>
 </body>
 
