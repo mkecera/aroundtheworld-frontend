@@ -139,7 +139,7 @@
     map1.addLayer(selectedCluster);
 
     // initialize map1's view
-    map1.setView(new L.LatLng(0, 0), 1);
+    map1.setView(new L.LatLng(0, 0), 1.5);
 
     // create second map
     var map2 = L.map("mapid2");
@@ -150,7 +150,7 @@
     }).addTo(map2);
 
     // initialize map2's view
-    map2.setView(new L.LatLng(0, 0), 1);
+    map2.setView(new L.LatLng(0, 0), 1.5);
 
     // onClick function
     function onClick(fromMonthSelection) {
