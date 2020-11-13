@@ -58,40 +58,40 @@
     </div>
     <div class="row justify-content-center">
       <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-outline-dark active">
+        <label class="btn btn-info active">
           <input type="radio" name="options" id="option1" value=1 onclick="onClick(true)" autocomplete="off" checked>Jan
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option2" value=2 onclick="onClick(true)" autocomplete="off">Feb
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option3" value=3 onclick="onClick(true)" autocomplete="off">Mar
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option4" value=4 onclick="onClick(true)" autocomplete="off">Apr
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option5" value=5 onclick="onClick(true)" autocomplete="off">May
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option6" value=6 onclick="onClick(true)" autocomplete="off">Jun
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option7" value=7 onclick="onClick(true)" autocomplete="off">Jul
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option8" value=8 onclick="onClick(true)" autocomplete="off">Aug
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option9" value=9 onclick="onClick(true)" autocomplete="off">Sep
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option10" value=10 onclick="onClick(true)" autocomplete="off">Oct
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option11" value=11 onclick="onClick(true)" autocomplete="off">Nov
         </label>
-        <label class="btn btn-outline-dark">
+        <label class="btn btn-info">
           <input type="radio" name="options" id="option12" value=12 onclick="onClick(true)" autocomplete="off">Dec
         </label>
       </div>
@@ -115,10 +115,10 @@
     }).addTo(map1);
 
     // create marker cluster group for map1
-    var cluster1 = L.markerClusterGroup({ disableClusteringAtZoom: 8 });
+    var cluster1 = L.markerClusterGroup({disableClusteringAtZoom: 8});
 
     // add markers to cluster1
-    for (var i = 0; i < allStations.length; i++) {
+    for (i = 0; i < allStations.length; i++) {
       marker = new L.marker([allStations[i][2], allStations[i][3]])
         .bindPopup("<b>" + allStations[i][1] + "</b><br>Latitude: " + allStations[i][2].toFixed(2) + "<br>Longitude: "
           + allStations[i][3].toFixed(2) + "<br>Elevation: " + allStations[i][4].toFixed(2),
@@ -135,7 +135,7 @@
 
     // create separate marker cluster group just for selected marker and add to map1
     var selectedMarker;
-    var selectedCluster = L.markerClusterGroup({ disableClusteringAtZoom: 8 });
+    var selectedCluster = L.markerClusterGroup();
     map1.addLayer(selectedCluster);
 
     // initialize map1's view
@@ -205,6 +205,17 @@
       if (!!selectedMarker) {
         $.getJSON("/similarity?station=" + selectedMarker.station + "&month=" + monthNum + "&limit=" + 100,
           function (data) {
+            // change button colors if similar stations for the month is unavailable
+            for (i = 1; i <= 12; i++) {
+              $("#option" + i.toString()).parent().removeClass("btn-info").removeClass("btn-outline-secondary");
+              if (data["available"].includes(i)) {
+                $("#option" + i.toString()).parent().addClass("btn-info");
+              } else {
+                $("#option" + i.toString()).parent().addClass("btn-outline-secondary");
+              }
+            }
+
+            // get similar stations
             var similarStations = data["stations"];
 
             // remove all layers from map2
@@ -219,7 +230,7 @@
 
             // add markers to cluster2
             var markerArray2 = [];
-            for (var i = 0; i < similarStations.length; i++) {
+            for (i = 0; i < similarStations.length; i++) {
               marker2 = new L.marker([similarStations[i][2], similarStations[i][3]])
                 .bindTooltip("<b>" + similarStations[i][1] + "</b><br>Latitude: " + similarStations[i][2].toFixed(2)
                   + "<br>Longitude: " + similarStations[i][3].toFixed(2) + "<br>Elevation: "
