@@ -4,22 +4,22 @@ import MySQLdb
 
 app = Flask(__name__)
 
-db_noaahourly = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
-                                user="darren",
-                                passwd="aroundtheworld",
-                                db="noaahourly")
-
-db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
-                                user="darren",
-                                passwd="aroundtheworld",
-                                db="similarity")
-
 stations_dict = {}
 similarity_tables_list = []
 
 
 @app.route('/')
 def index():
+    db_noaahourly = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
+                                    user="darren",
+                                    passwd="aroundtheworld",
+                                    db="noaahourly")
+
+    db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
+                                    user="darren",
+                                    passwd="aroundtheworld",
+                                    db="similarity")
+
     cur_noaahourly = db_noaahourly.cursor()
     cur_similarity = db_similarity.cursor()
     stations_list = []
@@ -56,12 +56,19 @@ def index():
     finally:
         cur_noaahourly.close()
         cur_similarity.close()
+        db_noaahourly.close()
+        db_similarity.close()
 
     return render_template('index.html', data=stations_list)
 
 
 @app.route('/similarity')
 def similarity():
+    db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
+                                    user="darren",
+                                    passwd="aroundtheworld",
+                                    db="similarity")
+
     station = request.args.get("station")
     month = request.args.get("month")
     limit = 100
@@ -93,5 +100,6 @@ def similarity():
             pass
         finally:
             cur.close()
+            db_similarity.close()
 
     return similar_stations_obj
