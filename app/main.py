@@ -26,7 +26,7 @@ def index():
 
     try:
         # get list of all stations
-        cur_noaahourly.execute("SELECT * FROM stations")
+        cur_noaahourly.execute("SELECT * FROM stations WHERE elevation>-300")
         stations_list = [list(row) for row in list(cur_noaahourly.fetchall())]
 
         # some station names have backslashes causing parsing errors
