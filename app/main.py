@@ -70,18 +70,17 @@ def index():
 
 @app.route('/similarity')
 def similarity():
-    db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
-                                    user="darren",
-                                    passwd="aroundtheworld",
-                                    db="similarity")
-
     station = request.args.get("station")
     month = request.args.get("month")
     limit = 100
-    cur = db_similarity.cursor()
     similar_stations_obj = {"stations": [], "available": []}
 
     if station is not None and month is not None and limit is not None:
+        db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
+                                        user="darren",
+                                        passwd="aroundtheworld",
+                                        db="similarity")
+        cur = db_similarity.cursor()
         available = []
 
         global similarity_tables_list
