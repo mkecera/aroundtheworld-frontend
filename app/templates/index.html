@@ -99,89 +99,96 @@
   </div>
 
   <script>
-    // load data from Flask
-    var allStations = JSON.parse('{{data|tojson}}');
-
-    // create first map
-    var map1 = L.map("mapid");
-
-    // attribution link
-    mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
-
-    // add OpenStreetMap Tile layer to map1
-    L.tileLayer(
-      "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; " + mapLink + " Contributors"
-    }).addTo(map1);
-
-    // create marker cluster group for map1
-    var cluster1 = L.markerClusterGroup({disableClusteringAtZoom: 8});
-
-    // add markers to cluster1
-    for (i = 0; i < allStations.length; i++) {
-      // only initialize station markers with January data
-      if (1 in allStations[i]) {
-        var name = allStations[i][1][1];
-        var latitude = allStations[i][1][2];
-        var longitude = allStations[i][1][3];
-        var elevation = allStations[i][1][4];
-        var windspeed = allStations[i][1][6];
-        var visibility = allStations[i][1][8];
-        var temperature = allStations[i][1][9];
-        var dewpoint = allStations[i][1][10];
-        var pressure = allStations[i][1][11];
-        var precipitation = allStations[i][1][12];
-        if (latitude != null) { latitude = latitude.toFixed(4); } else { latitude = "&lt;No Data&gt;"; }
-        if (longitude != null) { longitude = longitude.toFixed(4); } else { longitude = "&lt;No Data&gt;"; }
-        if (elevation != null) { elevation = elevation.toFixed(1) + " m"; } else { elevation = "&lt;No Data&gt;"; }
-        if (windspeed != null) { windspeed = (windspeed/10).toFixed(1) + " m/s"; } else { windspeed = "&lt;No Data&gt;"; }
-        if (visibility != null) { visibility = visibility.toFixed(1) + " m"; } else { visibility = "&lt;No Data&gt;"; }
-        if (temperature != null) { temperature = (temperature/10).toFixed(1) + " &#8451;"; } else { temperature = "&lt;No Data&gt;"; }
-        if (dewpoint != null) { dewpoint = (dewpoint/10).toFixed(1) + " &#8451;"; } else { dewpoint = "&lt;No Data&gt;"; }
-        if (pressure != null) { pressure = (pressure/10).toFixed(1) + " hp"; } else { pressure = '&lt;No Data&gt;'; }
-        if (precipitation != null) { precipitation = (precipitation/10).toFixed(1) + " mm"; } else { precipitation = "&lt;No Data&gt;"; }
-        marker = new L.marker([latitude, longitude])
-          .bindPopup("<table><tr><th colspan='4' style='text-align:center;'><u>" + name
-            + "</u></th></tr><tr><td style='text-align:right'><b>Latitude:</b.</td><td>" + latitude
-            + "</td><td style='text-align:right'><b>Avg. Temperature:</b></td><td>" + temperature
-            + "</td></tr><tr><td style='text-align:right'><b>Longitude:</b></td><td>" + longitude
-            + "</td><td style='text-align:right'><b>Avg. Dew Point:</b></td><td>" + dewpoint
-            + "</td></tr><tr><td style='text-align:right'><b>Elevation:</b></td><td>" + elevation
-            + "</td><td style='text-align:right'><b>Avg. Pressure:</b></td><td>" + pressure
-            + "</td></tr><tr><td style='text-align:right'><b>Avg. Wind Speed:</b></td><td>" + windspeed
-            + "</td><td style='text-align:right'><b>Avg. Precipitation:</b></td><td>" + precipitation
-            + "</td></tr><tr><td style='text-align:right'><b>Avg. Visibility:</b></td><td>" + visibility
-            + "</td></tr></table>",
-            {autoPan: false, autoClose: false, closeButton: false, closeOnClick: false, maxWidth: "auto"})
-          .on("click", onClick)
-          .on("mouseover", showPopup)
-          .on("mouseout", hidePopup);
-        marker.station = allStations[i][1][0];
-        cluster1.addLayer(marker);
-      }
-    }
-
-    // add cluster to map1
-    map1.addLayer(cluster1);
-
-    // create separate marker cluster group just for selected marker and add to map1
+    var allStations;
+    var map1;
+    var cluster1;
     var selectedMarker;
-    var selectedCluster = L.markerClusterGroup();
-    map1.addLayer(selectedCluster);
+    var selectedCluster;
+    var map2;
+    $(window).on("load", function() {
+      // load data from Flask
+      allStations = JSON.parse('{{data|tojson}}');
 
-    // initialize map1's view
-    map1.setView(new L.LatLng(0, 0), 1.5);
+      // create first map
+      map1 = L.map("mapid");
 
-    // create second map
-    var map2 = L.map("mapid2");
+      // attribution link
+      mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
 
-    // add OpenStreetMap Tile layer to map2
-    L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; " + mapLink + " Contributors"
-    }).addTo(map2);
+      // add OpenStreetMap Tile layer to map1
+      L.tileLayer(
+        "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; " + mapLink + " Contributors"
+      }).addTo(map1);
 
-    // initialize map2's view
-    map2.setView(new L.LatLng(0, 0), 1.5);
+      // create marker cluster group for map1
+      cluster1 = L.markerClusterGroup({disableClusteringAtZoom: 8});
+
+      // add markers to cluster1
+      for (i = 0; i < allStations.length; i++) {
+        // only initialize station markers with January data
+        if (1 in allStations[i]) {
+          var name = allStations[i][1][1];
+          var latitude = allStations[i][1][2];
+          var longitude = allStations[i][1][3];
+          var elevation = allStations[i][1][4];
+          var windspeed = allStations[i][1][6];
+          var visibility = allStations[i][1][8];
+          var temperature = allStations[i][1][9];
+          var dewpoint = allStations[i][1][10];
+          var pressure = allStations[i][1][11];
+          var precipitation = allStations[i][1][12];
+          if (latitude != null) { latitude = latitude.toFixed(4); } else { latitude = "&lt;No Data&gt;"; }
+          if (longitude != null) { longitude = longitude.toFixed(4); } else { longitude = "&lt;No Data&gt;"; }
+          if (elevation != null) { elevation = elevation.toFixed(1) + " m"; } else { elevation = "&lt;No Data&gt;"; }
+          if (windspeed != null) { windspeed = (windspeed/10).toFixed(1) + " m/s"; } else { windspeed = "&lt;No Data&gt;"; }
+          if (visibility != null) { visibility = visibility.toFixed(1) + " m"; } else { visibility = "&lt;No Data&gt;"; }
+          if (temperature != null) { temperature = (temperature/10).toFixed(1) + " &#8451;"; } else { temperature = "&lt;No Data&gt;"; }
+          if (dewpoint != null) { dewpoint = (dewpoint/10).toFixed(1) + " &#8451;"; } else { dewpoint = "&lt;No Data&gt;"; }
+          if (pressure != null) { pressure = (pressure/10).toFixed(1) + " hp"; } else { pressure = '&lt;No Data&gt;'; }
+          if (precipitation != null) { precipitation = (precipitation/10).toFixed(1) + " mm"; } else { precipitation = "&lt;No Data&gt;"; }
+          marker = new L.marker([latitude, longitude])
+            .bindPopup("<table><tr><th colspan='4' style='text-align:center;'><u>" + name
+              + "</u></th></tr><tr><td style='text-align:right'><b>Latitude:</b.</td><td>" + latitude
+              + "</td><td style='text-align:right'><b>Avg. Temperature:</b></td><td>" + temperature
+              + "</td></tr><tr><td style='text-align:right'><b>Longitude:</b></td><td>" + longitude
+              + "</td><td style='text-align:right'><b>Avg. Dew Point:</b></td><td>" + dewpoint
+              + "</td></tr><tr><td style='text-align:right'><b>Elevation:</b></td><td>" + elevation
+              + "</td><td style='text-align:right'><b>Avg. Pressure:</b></td><td>" + pressure
+              + "</td></tr><tr><td style='text-align:right'><b>Avg. Wind Speed:</b></td><td>" + windspeed
+              + "</td><td style='text-align:right'><b>Avg. Precipitation:</b></td><td>" + precipitation
+              + "</td></tr><tr><td style='text-align:right'><b>Avg. Visibility:</b></td><td>" + visibility
+              + "</td></tr></table>",
+              {autoPan: false, autoClose: false, closeButton: false, closeOnClick: false, maxWidth: "auto"})
+            .on("click", onClick)
+            .on("mouseover", showPopup)
+            .on("mouseout", hidePopup);
+          marker.station = allStations[i][1][0];
+          cluster1.addLayer(marker);
+        }
+      }
+
+      // add cluster to map1
+      map1.addLayer(cluster1);
+
+      // create separate marker cluster group just for selected marker and add to map1
+      selectedCluster = L.markerClusterGroup();
+      map1.addLayer(selectedCluster);
+
+      // initialize map1's view
+      map1.setView(new L.LatLng(0, 0), 1.5);
+
+      // create second map
+      map2 = L.map("mapid2");
+
+      // add OpenStreetMap Tile layer to map2
+      L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; " + mapLink + " Contributors"
+      }).addTo(map2);
+
+      // initialize map2's view
+      map2.setView(new L.LatLng(0, 0), 1.5);
+    });
 
     // onClick function
     function onClick(fromMonthSelection) {
