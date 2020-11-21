@@ -108,6 +108,7 @@
     $(window).on("load", function() {
       // load data from Flask
       allStations = JSON.parse('{{data|tojson}}');
+      console.log(allStations);
 
       // create first map
       map1 = L.map("mapid");

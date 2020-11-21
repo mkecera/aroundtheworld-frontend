@@ -103,8 +103,14 @@ def similarity():
                     similar_stations.append(similar_station)
 
             similar_stations_obj["stations"] = similar_stations
+            similar_stations_obj["similarity_tables_list"] = similarity_tables_list
+            similar_stations_obj["similar_stations_list"] = similar_stations_list
         except Exception as e:
-            similar_stations_obj = e
+            similar_stations_obj = {
+                "e": e,
+                "similarity_tables_list": similarity_tables_list,
+                "similar_stations_list": similar_stations_list
+            }
         finally:
             cur.close()
             db_similarity.close()
