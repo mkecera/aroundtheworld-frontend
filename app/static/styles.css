@@ -7,6 +7,10 @@
     height: 25vh;
 }
 
+.leaflet-popup-content-wrapper {
+    opacity: 0.95;
+}
+
 tr {
     white-space: nowrap;
 }
