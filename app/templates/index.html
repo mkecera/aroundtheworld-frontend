@@ -119,15 +119,46 @@
 
     // add markers to cluster1
     for (i = 0; i < allStations.length; i++) {
-      marker = new L.marker([allStations[i][2], allStations[i][3]])
-        .bindPopup("<b>" + allStations[i][1] + "</b><br>Latitude: " + allStations[i][2].toFixed(2) + "<br>Longitude: "
-          + allStations[i][3].toFixed(2) + "<br>Elevation: " + allStations[i][4].toFixed(2),
-          {autoPan: false, autoClose: false, closeButton: false, closeOnClick: false})
-        .on("click", onClick)
-        .on("mouseover", showPopup)
-        .on("mouseout", hidePopup);
-      marker.station = allStations[i][0];
-      cluster1.addLayer(marker);
+      // only initialize station markers with January data
+      if (1 in allStations[i]) {
+        var name = allStations[i][1][1];
+        var latitude = allStations[i][1][2];
+        var longitude = allStations[i][1][3];
+        var elevation = allStations[i][1][4];
+        var windspeed = allStations[i][1][6];
+        var visibility = allStations[i][1][8];
+        var temperature = allStations[i][1][9];
+        var dewpoint = allStations[i][1][10];
+        var pressure = allStations[i][1][11];
+        var precipitation = allStations[i][1][12];
+        if (latitude != null) { latitude = latitude.toFixed(4); } else { latitude = "&lt;No Data&gt;"; }
+        if (longitude != null) { longitude = longitude.toFixed(4); } else { longitude = "&lt;No Data&gt;"; }
+        if (elevation != null) { elevation = elevation.toFixed(1) + " m"; } else { elevation = "&lt;No Data&gt;"; }
+        if (windspeed != null) { windspeed = (windspeed/10).toFixed(1) + " m/s"; } else { windspeed = "&lt;No Data&gt;"; }
+        if (visibility != null) { visibility = visibility.toFixed(1) + " m"; } else { visibility = "&lt;No Data&gt;"; }
+        if (temperature != null) { temperature = (temperature/10).toFixed(1) + " &#8451;"; } else { temperature = "&lt;No Data&gt;"; }
+        if (dewpoint != null) { dewpoint = (dewpoint/10).toFixed(1) + " &#8451;"; } else { dewpoint = "&lt;No Data&gt;"; }
+        if (pressure != null) { pressure = (pressure/10).toFixed(1) + " hp"; } else { pressure = '&lt;No Data&gt;'; }
+        if (precipitation != null) { precipitation = (precipitation/10).toFixed(1) + " mm"; } else { precipitation = "&lt;No Data&gt;"; }
+        marker = new L.marker([latitude, longitude])
+          .bindPopup("<table><tr><th colspan='4' style='text-align:center;'><u>" + name
+            + "</u></th></tr><tr><td style='text-align:right'><b>Latitude:</b.</td><td>" + latitude
+            + "</td><td style='text-align:right'><b>Avg. Temperature:</b></td><td>" + temperature
+            + "</td></tr><tr><td style='text-align:right'><b>Longitude:</b></td><td>" + longitude
+            + "</td><td style='text-align:right'><b>Avg. Dew Point:</b></td><td>" + dewpoint
+            + "</td></tr><tr><td style='text-align:right'><b>Elevation:</b></td><td>" + elevation
+            + "</td><td style='text-align:right'><b>Avg. Pressure:</b></td><td>" + pressure
+            + "</td></tr><tr><td style='text-align:right'><b>Avg. Wind Speed:</b></td><td>" + windspeed
+            + "</td><td style='text-align:right'><b>Avg. Precipitation:</b></td><td>" + precipitation
+            + "</td></tr><tr><td style='text-align:right'><b>Avg. Visibility:</b></td><td>" + visibility
+            + "</td></tr></table>",
+            {autoPan: false, autoClose: false, closeButton: false, closeOnClick: false, maxWidth: "auto"})
+          .on("click", onClick)
+          .on("mouseover", showPopup)
+          .on("mouseout", hidePopup);
+        marker.station = allStations[i][1][0];
+        cluster1.addLayer(marker);
+      }
     }
 
     // add cluster to map1
@@ -199,6 +230,7 @@
         }
         this.openPopup();
         selectedMarker = this;
+        map1.panTo(this.getLatLng());
       }
 
       // redraw map2
@@ -231,10 +263,44 @@
             // add markers to cluster2
             var markerArray2 = [];
             for (i = 0; i < similarStations.length; i++) {
-              marker2 = new L.marker([similarStations[i][2], similarStations[i][3]])
-                .bindTooltip("<b>" + similarStations[i][1] + "</b><br>Latitude: " + similarStations[i][2].toFixed(2)
-                  + "<br>Longitude: " + similarStations[i][3].toFixed(2) + "<br>Elevation: "
-                  + similarStations[i][4].toFixed(2) + "<br>Similarity: " + similarStations[i][5].toFixed(2));
+              var name = similarStations[i][1];
+              var latitude = similarStations[i][2];
+              var longitude = similarStations[i][3];
+              var elevation = similarStations[i][4];
+              var windspeed = similarStations[i][6];
+              var visibility = similarStations[i][8];
+              var temperature = similarStations[i][9];
+              var dewpoint = similarStations[i][10];
+              var pressure = similarStations[i][11];
+              var precipitation = similarStations[i][12];
+              var similarity = similarStations[i][13];
+              if (latitude != null) { latitude = latitude.toFixed(4); } else { latitude = "&lt;No Data&gt;"; }
+              if (longitude != null) { longitude = longitude.toFixed(4); } else { longitude = "&lt;No Data&gt;"; }
+              if (elevation != null) { elevation = elevation.toFixed(1) + " m"; } else { elevation = "&lt;No Data&gt;"; }
+              if (windspeed != null) { windspeed = (windspeed/10).toFixed(1) + " m/s"; } else { windspeed = "&lt;No Data&gt;"; }
+              if (visibility != null) { visibility = visibility.toFixed(1) + " m"; } else { visibility = "&lt;No Data&gt;"; }
+              if (temperature != null) { temperature = (temperature/10).toFixed(1) + " &#8451;"; } else { temperature = "&lt;No Data&gt;"; }
+              if (dewpoint != null) { dewpoint = (dewpoint/10).toFixed(1) + " &#8451;"; } else { dewpoint = "&lt;No Data&gt;"; }
+              if (pressure != null) { pressure = (pressure/10).toFixed(1) + " hp"; } else { pressure = '&lt;No Data&gt;'; }
+              if (precipitation != null) { precipitation = (precipitation/10).toFixed(1) + " mm"; } else { precipitation = "&lt;No Data&gt;"; }
+              if (similarity != null) { similarity = (similarity*100).toFixed(2) + "%"; } else { similarity = "&lt;No Data&gt;"; }
+              marker2 = new L.marker([latitude, longitude])
+                .bindPopup("<table><tr><th colspan='4' style='text-align:center;'><u>" + name
+                    + "</u></th></tr><tr><td style='text-align:right'><b>Latitude:</b.</td><td>" + latitude
+                    + "</td><td style='text-align:right'><b>Avg. Temperature:</b></td><td>" + temperature
+                    + "</td></tr><tr><td style='text-align:right'><b>Longitude:</b></td><td>" + longitude
+                    + "</td><td style='text-align:right'><b>Avg. Dew Point:</b></td><td>" + dewpoint
+                    + "</td></tr><tr><td style='text-align:right'><b>Elevation:</b></td><td>" + elevation
+                    + "</td><td style='text-align:right'><b>Avg. Pressure:</b></td><td>" + pressure
+                    + "</td></tr><tr><td style='text-align:right'><b>Avg. Wind Speed:</b></td><td>" + windspeed
+                    + "</td><td style='text-align:right'><b>Avg. Precipitation:</b></td><td>" + precipitation
+                    + "</td></tr><tr><td style='text-align:right'><b>Avg. Visibility:</b></td><td>" + visibility
+                    + "</td><td style='text-align:right'><b>Similarity:</b></td><td>" + similarity
+                    + "</td></tr></table>",
+                    {autoPan: false, autoClose: false, closeButton: false, closeOnClick: false, maxWidth: "auto"})
+                .on("click", onClick2)
+                .on("mouseover", showPopup)
+                .on("mouseout", hidePopup2);
               markerArray2.push(marker2);
             }
             var group2 = L.featureGroup(markerArray2).addTo(map2);
@@ -255,6 +321,23 @@
       if (this != selectedMarker) {
         this.closePopup();
       }
+    }
+
+    var selectedMarker2;
+
+    function onClick2() {
+        map2.eachLayer(function(layer) {
+            layer.closePopup();
+        });
+        this.openPopup();
+        selectedMarker2 = this;
+        map2.panTo(this.getLatLng());
+    }
+
+    function hidePopup2() {
+        if (this != selectedMarker2) {
+            this.closePopup();
+        }
     }
   </script>
 </body>

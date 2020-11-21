@@ -6,3 +6,7 @@
 .logo{
     height: 25vh;
 }
+
+tr {
+    white-space: nowrap;
+}

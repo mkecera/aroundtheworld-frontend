@@ -26,7 +26,7 @@ def index():
 
     try:
         # get list of all stations
-        cur_noaahourly.execute("SELECT * FROM stations")
+        cur_noaahourly.execute("SELECT * FROM stations2")
         stations_list = [list(row) for row in list(cur_noaahourly.fetchall())]
 
         # some station names have backslashes causing parsing errors
@@ -35,8 +35,14 @@ def index():
                 row[1] = row[1].replace("\\", "")
 
         # convert list of lists into dictionary
+        global stations_dict
         for row in stations_list:
-            stations_dict[row[0]] = row
+            station = row[0]
+            month = row[5]
+            if station in stations_dict.keys():
+                stations_dict[station][month] = row
+            else:
+                stations_dict[station] = {month: row}
 
         # get list of similarity tables
         cur_similarity.execute("SHOW TABLES")
@@ -78,6 +84,7 @@ def similarity():
     if station is not None and month is not None and limit is not None:
         available = []
 
+        global similarity_tables_list
         for i in range(1, 13):
             if "station_" + station + "_" + str(i) in similarity_tables_list:
                 available.append(i)
@@ -87,15 +94,16 @@ def similarity():
         try:
             cur.execute("SELECT * FROM station_" + station + "_" + month + " LIMIT " + str(limit))
             similar_stations_list = [list(row) for row in list(cur.fetchall())]
-            stations = []
+            similar_stations = []
 
+            global stations_dict
             for row in similar_stations_list:
-                station = stations_dict[row[0]]
-                if station is not None:
-                    station.append(row[1])
-                    stations.append(station)
+                if row[0] in stations_dict.keys() and int(month) in stations_dict[row[0]]:
+                    similar_station = stations_dict[row[0]][int(month)]
+                    similar_station.append(row[1])
+                    similar_stations.append(similar_station)
 
-            similar_stations_obj["stations"] = stations
+            similar_stations_obj["stations"] = similar_stations
         except Exception:
             pass
         finally:
