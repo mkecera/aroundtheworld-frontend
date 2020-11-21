@@ -105,6 +105,7 @@ def similarity():
             similar_stations_obj["stations"] = similar_stations
             similar_stations_obj["similarity_tables_list"] = similarity_tables_list
             similar_stations_obj["similar_stations_list"] = similar_stations_list
+            similar_stations_obj["stations_dict"] = stations_dict
         except Exception as e:
             similar_stations_obj = {
                 "e": e,
