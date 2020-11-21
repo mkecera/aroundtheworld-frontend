@@ -128,6 +128,7 @@
         for (i = 0; i < allStations.length; i++) {
             // only initialize station markers with January data
             if (1 in allStations[i]) {
+                var station = allStations[i][1][0];
                 var name = allStations[i][1][1];
                 var latitude = allStations[i][1][2];
                 var longitude = allStations[i][1][3];
@@ -163,7 +164,7 @@
                     .on("click", onClick)
                     .on("mouseover", showPopup)
                     .on("mouseout", hidePopup);
-                marker.station = allStations[i][1][0];
+                marker.station = station;
                 cluster1.addLayer(marker);
             }
         }
@@ -221,6 +222,82 @@
         }
 
         if (fromMonthSelection == true) {
+            // remove all layers from map1
+            map1.eachLayer(function (layer) {
+                map1.removeLayer(layer);
+            });
+
+            // add OpenStreetMap Tile layer to map1
+            L.tileLayer(
+                "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    attribution: "&copy; " + mapLink + " Contributors"
+                }).addTo(map1);
+
+            // recreate marker cluster group and separate marker cluster group for map1
+            cluster1 = L.markerClusterGroup({disableClusteringAtZoom: 8});
+            selectedCluster = L.markerClusterGroup();
+
+            // add markers to cluster1
+            for (i = 0; i < allStations.length; i++) {
+                // re-initialize station markers with selected month's data
+                if (monthNum in allStations[i]) {
+                    var station = allStations[i][monthNum][0];
+                    var name = allStations[i][monthNum][1];
+                    var latitude = allStations[i][monthNum][2];
+                    var longitude = allStations[i][monthNum][3];
+                    var elevation = allStations[i][monthNum][4];
+                    var windspeed = allStations[i][monthNum][6];
+                    var visibility = allStations[i][monthNum][8];
+                    var temperature = allStations[i][monthNum][9];
+                    var dewpoint = allStations[i][monthNum][10];
+                    var pressure = allStations[i][monthNum][11];
+                    var precipitation = allStations[i][monthNum][12];
+                    if (latitude != null) { latitude = latitude.toFixed(4); } else { latitude = "&lt;No Data&gt;"; }
+                    if (longitude != null) { longitude = longitude.toFixed(4); } else { longitude = "&lt;No Data&gt;"; }
+                    if (elevation != null) { elevation = elevation.toFixed(1) + " m"; } else { elevation = "&lt;No Data&gt;"; }
+                    if (windspeed != null) { windspeed = (windspeed/10).toFixed(1) + " m/s"; } else { windspeed = "&lt;No Data&gt;"; }
+                    if (visibility != null) { visibility = visibility.toFixed(1) + " m"; } else { visibility = "&lt;No Data&gt;"; }
+                    if (temperature != null) { temperature = (temperature/10).toFixed(1) + " &#8451;"; } else { temperature = "&lt;No Data&gt;"; }
+                    if (dewpoint != null) { dewpoint = (dewpoint/10).toFixed(1) + " &#8451;"; } else { dewpoint = "&lt;No Data&gt;"; }
+                    if (pressure != null) { pressure = (pressure/10).toFixed(1) + " hp"; } else { pressure = '&lt;No Data&gt;'; }
+                    if (precipitation != null) { precipitation = (precipitation/10).toFixed(1) + " mm"; } else { precipitation = "&lt;No Data&gt;"; }
+                    marker = new L.marker([latitude, longitude])
+                        .bindPopup("<table><tr><th colspan='4' style='text-align:center;'><u>" + name
+                            + "</u></th></tr><tr><td style='text-align:right'><b>Latitude:</b.</td><td>" + latitude
+                            + "</td><td style='text-align:right'><b>Avg. Temperature:</b></td><td>" + temperature
+                            + "</td></tr><tr><td style='text-align:right'><b>Longitude:</b></td><td>" + longitude
+                            + "</td><td style='text-align:right'><b>Avg. Dew Point:</b></td><td>" + dewpoint
+                            + "</td></tr><tr><td style='text-align:right'><b>Elevation:</b></td><td>" + elevation
+                            + "</td><td style='text-align:right'><b>Avg. Pressure:</b></td><td>" + pressure
+                            + "</td></tr><tr><td style='text-align:right'><b>Avg. Wind Speed:</b></td><td>" + windspeed
+                            + "</td><td style='text-align:right'><b>Avg. Precipitation:</b></td><td>" + precipitation
+                            + "</td></tr><tr><td style='text-align:right'><b>Avg. Visibility:</b></td><td>" + visibility
+                            + "</td></tr></table>",
+                            {autoPan: false, autoClose: false, closeButton: false, closeOnClick: false, maxWidth: "auto"})
+                        .on("click", onClick)
+                        .on("mouseover", showPopup)
+                        .on("mouseout", hidePopup);
+                    marker.station = station;
+                    if (station == selectedMarker.station) {
+                        selectedCluster.addLayer(marker);
+                    } else {
+                        cluster1.addLayer(marker);
+                    }
+                }
+            }
+
+            // add clusters to map1
+            map1.addLayer(cluster1);
+            map1.addLayer(selectedCluster);
+
+            // reassign and reopen selected marker
+            map1.eachLayer(function(marker) {
+                if (marker.station == selectedMarker.station) {
+                    selectedMarker = marker;
+                    marker.openPopup();
+                }
+            });
+
             $("#message").text("These are the top 100 locations with the most similar climate to the one you picked for"
                 + " the month of " + monthText + "!");
         } else {
