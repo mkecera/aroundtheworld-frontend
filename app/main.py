@@ -4,12 +4,56 @@ import MySQLdb
 
 app = Flask(__name__)
 
+# initialize global variables stations_dict and similarity_tables_list on app load
 stations_dict = {}
 similarity_tables_list = []
+db_noaahourly = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
+                                user="darren",
+                                passwd="aroundtheworld",
+                                db="noaahourly")
+
+db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
+                                user="darren",
+                                passwd="aroundtheworld",
+                                db="similarity")
+
+cur_noaahourly = db_noaahourly.cursor()
+cur_similarity = db_similarity.cursor()
+
+try:
+    # get list of all stations
+    cur_noaahourly.execute("SELECT * FROM stations2 WHERE elevation > -300")
+    stations_list = [list(row) for row in list(cur_noaahourly.fetchall())]
+
+    # some station names have backslashes causing parsing errors
+    for row in stations_list:
+        if row[1] is not None:
+            row[1] = row[1].replace("\\", "")
+
+    # convert list of lists into dictionary
+    for row in stations_list:
+        station = row[0]
+        month = row[5]
+        if station in stations_dict.keys():
+            stations_dict[station][month] = row
+        else:
+            stations_dict[station] = {month: row}
+
+    # get list of similarity tables
+    cur_similarity.execute("SHOW TABLES")
+    similarity_tables_list = [row[0] for row in list(cur_similarity.fetchall())]
+except Exception as e:
+    print(e)
+finally:
+    cur_noaahourly.close()
+    cur_similarity.close()
+    db_noaahourly.close()
+    db_similarity.close()
 
 
 @app.route('/')
 def index():
+    stations_list = []
     db_noaahourly = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
                                     user="darren",
                                     passwd="aroundtheworld",
@@ -22,33 +66,10 @@ def index():
 
     cur_noaahourly = db_noaahourly.cursor()
     cur_similarity = db_similarity.cursor()
-    stations_list = []
 
     try:
-        # get list of all stations
-        cur_noaahourly.execute("SELECT * FROM stations2 WHERE elevation > -300")
-        stations_list = [list(row) for row in list(cur_noaahourly.fetchall())]
-
-        # some station names have backslashes causing parsing errors
-        for row in stations_list:
-            if row[1] is not None:
-                row[1] = row[1].replace("\\", "")
-
-        # convert list of lists into dictionary
         global stations_dict
-        for row in stations_list:
-            station = row[0]
-            month = row[5]
-            if station in stations_dict.keys():
-                stations_dict[station][month] = row
-            else:
-                stations_dict[station] = {month: row}
-
-        # get list of similarity tables
-        cur_similarity.execute("SHOW TABLES")
         global similarity_tables_list
-        similarity_tables_list = [row[0] for row in list(cur_similarity.fetchall())]
-
         # get list of stations with at least 1 similarity table
         similarity_tables_list_unique = [int(table[table.find("_")+1:table.rfind("_")]) for table in
                                          similarity_tables_list if table.count("_") == 2]
@@ -70,10 +91,10 @@ def index():
 
 @app.route('/similarity')
 def similarity():
+    similar_stations_obj = {"stations": [], "available": []}
     station = request.args.get("station")
     month = request.args.get("month")
-    limit = 100
-    similar_stations_obj = {"stations": [], "available": []}
+    limit = request.args.get("limit")
 
     if station is not None and month is not None and limit is not None:
         db_similarity = MySQLdb.connect(host="database-atw2.cvfgbrtjh8kr.us-east-1.rds.amazonaws.com",
@@ -103,15 +124,8 @@ def similarity():
                     similar_stations.append(similar_station)
 
             similar_stations_obj["stations"] = similar_stations
-            similar_stations_obj["similarity_tables_list"] = similarity_tables_list
-            similar_stations_obj["similar_stations_list"] = similar_stations_list
-            similar_stations_obj["stations_dict"] = stations_dict
-        except Exception as e:
-            similar_stations_obj = {
-                "e": e,
-                "similarity_tables_list": similarity_tables_list,
-                "similar_stations_list": similar_stations_list
-            }
+        except Exception:
+            pass
         finally:
             cur.close()
             db_similarity.close()
