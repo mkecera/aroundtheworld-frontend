@@ -244,6 +244,7 @@
       if (!!selectedMarker) {
         $.getJSON("/similarity?station=" + selectedMarker.station + "&month=" + monthNum + "&limit=" + 100,
           function (data) {
+            console.log(data);
             // change button colors if similar stations for the month is unavailable
             for (i = 1; i <= 12; i++) {
               $("#option" + i.toString()).parent().removeClass("btn-info").removeClass("btn-outline-secondary");
