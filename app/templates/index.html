@@ -278,7 +278,7 @@
                         .on("mouseover", showPopup)
                         .on("mouseout", hidePopup);
                     marker.station = station;
-                    if (station == selectedMarker.station) {
+                    if (selectedMarker != null && station == selectedMarker.station) {
                         selectedCluster.addLayer(marker);
                     } else {
                         cluster1.addLayer(marker);
@@ -292,7 +292,7 @@
 
             // reassign and reopen selected marker
             map1.eachLayer(function(marker) {
-                if (marker.station == selectedMarker.station) {
+                if (selectedMarker != null && marker.station == selectedMarker.station) {
                     selectedMarker = marker;
                     marker.openPopup();
                 }
